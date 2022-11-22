@@ -6,7 +6,9 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
 
 public class ManagerClass {
@@ -15,12 +17,22 @@ public class ManagerClass {
     final private AmazonS3 s3Client;
     final private String sqsFromLocalApplicationURL = "https://sqs.us-east-1.amazonaws.com/712064767285/LocalApplicationToManagerS3URLToDataSQS.fifo";
 
+    private boolean terminated = false;
+    private ConcurrentHashMap<String,Integer> fileLinesLeftManager;
+    public ManagerClass(){
+        sqsClient = AmazonSQSClientBuilder.defaultClient();
+        s3Client = AmazonS3ClientBuilder.defaultClient();
+        filesToSplitDeque = new LinkedBlockingDeque<>();
+        fileLinesLeftManager = new ConcurrentHashMap<>();
+    }
+
+    public ConcurrentHashMap<String, Integer> getFileLinesLeftManager() {
+        return fileLinesLeftManager;
+    }
+
     public void setTerminated(boolean terminated) {
         this.terminated = terminated;
     }
-
-    private boolean terminated = false;
-
     public boolean isTerminated() {
         return terminated;
     }
@@ -31,12 +43,6 @@ public class ManagerClass {
 
     public BlockingDeque<File> getFilesToSplitDeque() {
         return filesToSplitDeque;
-    }
-
-    public ManagerClass(){
-        sqsClient = AmazonSQSClientBuilder.defaultClient();
-        s3Client = AmazonS3ClientBuilder.defaultClient();
-        filesToSplitDeque = new LinkedBlockingDeque<>();
     }
     public AmazonSQS getSqsClient() {
         return sqsClient;
