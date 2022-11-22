@@ -26,15 +26,21 @@ public class FileSplitter implements Runnable {
     }
     public void splitFileAndSendToManagerToWorkerSQS(File currFile){
         try (BufferedReader br = new BufferedReader(new FileReader(currFile))) {
-            String line;
             List<SendMessageBatchRequestEntry> batchEntriesList = new ArrayList<>();
-            while ((line = br.readLine()) != null) {
-                SendMessageBatchRequestEntry entry = createBatchRequestEntry(currFile.getName(),line, String.valueOf(batchEntriesList.size()));
+            String next, line = br.readLine();
+            boolean eof = false;
+            while (line != null) {
+                next = br.readLine();
+                if (next == null){
+                    eof = true;
+                }
+                SendMessageBatchRequestEntry entry = createBatchRequestEntry(currFile.getName(),line, String.valueOf(batchEntriesList.size()),eof);
                 batchEntriesList.add(entry);
                 if (batchEntriesList.size() == 10){
                     sendBatch(batchEntriesList);
                     batchEntriesList.clear();
                 }
+                line = next;
             }
             if(batchEntriesList.size() != 0){
                 sendBatch(batchEntriesList);
@@ -46,13 +52,16 @@ public class FileSplitter implements Runnable {
     public void deleteLocalFile(File currFile){
         currFile.delete();
     }
-    private SendMessageBatchRequestEntry createBatchRequestEntry(String localAppId,String imageUrl,String entryId){
+    private SendMessageBatchRequestEntry createBatchRequestEntry(String localAppId,String imageUrl,String entryId, boolean eof){
         Map<String, MessageAttributeValue> messageAttributes = new HashMap<>();
         messageAttributes.put("id", new MessageAttributeValue()
                 .withStringValue(localAppId)
                 .withDataType("String"));
         messageAttributes.put("imageurl", new MessageAttributeValue()
                 .withStringValue(imageUrl)
+                .withDataType("String"));
+        messageAttributes.put("eof", new MessageAttributeValue()
+                .withStringValue(String.valueOf(eof))
                 .withDataType("String"));
         return new SendMessageBatchRequestEntry(entryId,imageUrl)
                 .withMessageAttributes(messageAttributes)
@@ -73,7 +82,7 @@ public class FileSplitter implements Runnable {
 
 
     public void run() {
-        while(!manager.isTerminated()){
+        while(!manager.isTerminated() || filesToSplitDeque.size() != 0){
             File file = filesToSplitDeque.removeFirst();
             splitFileAndSendToManagerToWorkerSQS(file);
             deleteLocalFile(file);

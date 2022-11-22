@@ -26,7 +26,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
         this.sqsClient = manager.getSqsClient();
         this.sqsToManagerUrl = manager.getSqsFromLocalApplicationURL();
         this.s3Client = manager.getS3Client();
-        this.ec2Client = AmazonEC2ClientBuilder.defaultClient();
+        this.ec2Client = manager.getEc2Client();
     }
     public void run() {
         while(!manager.isTerminated()) {
@@ -73,7 +73,6 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
             }
         }
     }
-    //TODO
     public void initWorkers(int numOfWorkersToRun){
         int currentWorkers = countWorkers();
         int numOfWorkersAllowedToAdd = maximumWorkers - currentWorkers;
