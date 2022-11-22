@@ -8,6 +8,8 @@ import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -19,6 +21,9 @@ public class ManagerClass {
     final private AmazonEC2 ec2Client;
     final private String sqsFromLocalApplicationURL = "https://sqs.us-east-1.amazonaws.com/712064767285/LocalApplicationToManagerS3URLToDataSQS.fifo";
     final private String uploadBucket = "amazon-first-project";
+    final private int workerToThreadRatio = 5;
+
+    private List<Thread> threadList;
 
     private boolean terminated = false;
     private ConcurrentHashMap<String,File> fileIDHashmap;
@@ -28,14 +33,26 @@ public class ManagerClass {
         filesToSplitDeque = new LinkedBlockingDeque<>();
         fileIDHashmap = new ConcurrentHashMap<>();
         ec2Client = AmazonEC2ClientBuilder.defaultClient();
+        threadList = new ArrayList<>();
     }
 
     public AmazonEC2 getEc2Client() {
         return ec2Client;
     }
 
+    public void addToThreadList(Thread thread){
+        this.threadList.add(thread);
+    }
+    public List<Thread> getThreadList(){
+        return threadList;
+    }
+
     public String getUploadBucket() {
         return uploadBucket;
+    }
+
+    public int getWorkerToThreadRatio() {
+        return workerToThreadRatio;
     }
 
     public ConcurrentHashMap<String, File> getFileIDHashmap() {

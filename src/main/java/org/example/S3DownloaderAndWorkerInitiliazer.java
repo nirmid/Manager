@@ -87,6 +87,15 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
                     .withUserData((Base64.getEncoder().encodeToString("/*your USER DATA script string*/".getBytes())));
             ec2Client.runInstances(runRequest);
         }
+        initWorkerMessagesHandlerThreads();
+    }
+
+    public void initWorkerMessagesHandlerThreads(){
+        int currNumOfWorkerThreads = manager.getThreadList().size() - 2;
+        double neededThreads = (countWorkers() - 2) / manager.getWorkerToThreadRatio();
+        long numOfInitThreads = Math.round (0.5+ neededThreads - currNumOfWorkerThreads);
+
+
     }
     private int countWorkers(){
         int currentWorkers = 0;
