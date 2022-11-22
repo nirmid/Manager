@@ -1,7 +1,6 @@
 package org.example;
 
 import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.sqs.AmazonSQS;
@@ -156,6 +155,7 @@ public class workerMessagesHandler implements Runnable {
                 e.printStackTrace();
             }
         }
+        shutDownWorkers();
 
 
     }

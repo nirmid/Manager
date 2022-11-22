@@ -1,7 +1,6 @@
 package org.example;
 
 import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ec2.model.*;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GetObjectRequest;
@@ -84,7 +83,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
                     .withInstanceType(InstanceType.T2Micro)
                     .withMaxCount(numOfWorkersToInit)
                     .withMinCount(numOfWorkersToInit)
-                    .withUserData((Base64.getEncoder().encodeToString("/*your USER DATA script string*/".getBytes())));
+                    .withUserData((Base64.getEncoder().encodeToString("java -jar Worker.jar".getBytes())));
             ec2Client.runInstances(runRequest);
         }
         initWorkerMessagesHandlerThreads();

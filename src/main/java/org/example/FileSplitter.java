@@ -6,7 +6,6 @@ import com.amazonaws.services.sqs.model.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +15,7 @@ import java.util.concurrent.BlockingDeque;
 public class FileSplitter implements Runnable {
 
     final private ManagerClass manager;
+    final private String managerToWorkerSQSURL = "https://sqs.us-east-1.amazonaws.com/712064767285/managerToWorkerSQS.fifo";
     final private BlockingDeque<File> filesToSplitDeque;
     final private AmazonSQS sqsClient;
     public FileSplitter(ManagerClass manager){
@@ -71,7 +71,7 @@ public class FileSplitter implements Runnable {
     }
     private void sendBatch(List<SendMessageBatchRequestEntry> batchEntriesList){
         SendMessageBatchRequest batchRequest = new SendMessageBatchRequest()
-                .withQueueUrl("https://sqs.us-east-1.amazonaws.com/712064767285/managerToWorkerSQS.fifo");
+                .withQueueUrl(managerToWorkerSQSURL);
         batchRequest.setEntries(batchEntriesList);
         SendMessageBatchResult result = sqsClient.sendMessageBatch(batchRequest);
 
