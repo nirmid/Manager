@@ -23,6 +23,7 @@ public class ManagerClass {
     final private String uploadBucket = "amazon-first-project";
     final private int workerToThreadRatio = 5;
 
+
     private List<Thread> threadList;
 
     private boolean terminated = false;

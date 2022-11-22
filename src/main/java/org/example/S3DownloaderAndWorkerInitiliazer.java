@@ -92,10 +92,16 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
 
     public void initWorkerMessagesHandlerThreads(){
         int currNumOfWorkerThreads = manager.getThreadList().size() - 2;
-        double neededThreads = (countWorkers() - 2) / manager.getWorkerToThreadRatio();
-        long numOfInitThreads = Math.round (0.5+ neededThreads - currNumOfWorkerThreads);
-
-
+        double currWorkersNum = countWorkers();
+        double workerToThreadRatio = manager.getWorkerToThreadRatio();
+        int neededThreads = (int) Math.ceil(currWorkersNum/workerToThreadRatio);
+        int threadsToInit = neededThreads - currNumOfWorkerThreads;
+        List<Thread> threadsList= manager.getThreadList();
+        for (int i = 0; i < threadsToInit ; i++){
+            Thread t = new Thread(new workerMessagesHandler(manager));
+            threadsList.add(t);
+            t.start();
+        }
     }
     private int countWorkers(){
         int currentWorkers = 0;

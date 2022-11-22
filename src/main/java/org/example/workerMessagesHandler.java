@@ -24,6 +24,7 @@ public class workerMessagesHandler implements Runnable {
     private String uploadBucket;
     final private ManagerClass manager;
     final private AmazonEC2 ec2Client;
+
     public workerMessagesHandler(ManagerClass manager) {
         this.ec2Client = manager.getEc2Client();
         this.manager = manager;

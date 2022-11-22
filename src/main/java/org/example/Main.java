@@ -1,6 +1,20 @@
 package org.example;
+
+import java.util.List;
+
 public class Main
 {
+    public static void startThreads(List<Thread> threadList){
+        for (Thread t : threadList){
+            t.start();
+        }
+    }
+    public static void stopThreads(List<Thread> threadList) throws InterruptedException {
+        for (Thread t : threadList) {
+            t.join();
+            threadList.remove(t);
+        }
+    }
     public static void main( String[] args ) throws InterruptedException {
         ManagerClass manager = new ManagerClass();
         S3DownloaderAndWorkerInitiliazer s3DownloaderAndWorkerInitiliazer = new S3DownloaderAndWorkerInitiliazer(manager);
@@ -9,11 +23,12 @@ public class Main
         Thread T1 = new Thread(s3DownloaderAndWorkerInitiliazer);
         Thread T2 = new Thread(fileSplitter);
         Thread T3 = new Thread(workerMessagesHandler);
-        T1.run();
-        T2.run();
-        T3.run();
-        T1.join();
-        T2.join();
-        T3.join();
+        manager.addToThreadList(T1);
+        manager.addToThreadList(T2);
+        manager.addToThreadList(T3);
+        startThreads(manager.getThreadList());
+        stopThreads(manager.getThreadList());
+        stopThreads(manager.getThreadList());// if we initiated new threads, we won't wait for them in the first stopThreads.
+
     }
 }
