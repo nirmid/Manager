@@ -9,8 +9,7 @@ import com.amazonaws.services.sqs.model.Message;
 import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 
 import java.io.*;
-import java.util.Base64;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.BlockingDeque;
 
 public class S3DownloaderAndWorkerInitiliazer implements Runnable{
@@ -83,10 +82,39 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
                     .withInstanceType(InstanceType.T2Micro)
                     .withMaxCount(numOfWorkersToInit)
                     .withMinCount(numOfWorkersToInit)
-                    .withUserData((Base64.getEncoder().encodeToString("java -jar Worker.jar".getBytes())));
+                    .withUserData((Base64.getEncoder().encodeToString((getUserDataScript()).getBytes())))
+                    .withMonitoring(true);
             ec2Client.runInstances(runRequest);
         }
         initWorkerMessagesHandlerThreads();
+    }
+    private String getUserDataScript(){
+        ArrayList<String> lines = new ArrayList<String>();
+        lines.add("#!/bin/bash");
+        lines.add("rm Worker.jar");
+        lines.add("echo Deleted Worker.jar");
+        lines.add("wget -O Worker.jar https://github.com/Asif857/Worker/blob/master/out/artifacts/Worker_jar/Worker.jar?raw=true");
+        lines.add("echo Downloading Worker.jar");
+        lines.add("java -jar Worker.jar");
+        lines.add("echo Running Worker.jar");
+        String temp = (join(lines, "\n"));
+        System.out.println(temp);
+        String str = Base64.getEncoder().encodeToString((join(lines, "\n").getBytes()));
+        System.out.println(str);
+        return str;
+    }
+
+    private static String join(Collection<String> s, String delimiter) {
+        StringBuilder builder = new StringBuilder();
+        Iterator<String> iter = s.iterator();
+        while (iter.hasNext()) {
+            builder.append(iter.next());
+            if (!iter.hasNext()) {
+                break;
+            }
+            builder.append(delimiter);
+        }
+        return builder.toString();
     }
 
     public void initWorkerMessagesHandlerThreads(){
