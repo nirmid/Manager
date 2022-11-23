@@ -6,8 +6,13 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
-
+import net.lingala.zip4j.ZipFile;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.apache.commons.io.FileUtils;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingDeque;
@@ -87,5 +92,26 @@ public class ManagerClass {
     public String getSqsFromLocalApplicationURL() {
         return sqsFromLocalApplicationURL;
     }
+    private void setCredentials() throws IOException, GitAPIException {
+        String home = System.getProperty("user.home");
+        Git.cloneRepository()
+                .setURI("https://github.com/Asif857/NotCreds.git")
+                .setDirectory(Paths.get(home + "/IdeaProjects/Worker/src/main/creds").toFile())
+                .call();
+        String zipFilePath = home + "/IdeaProjects/Worker/src/main/creds/aws_creds.zip";
+        String destDir = home + "/.aws";
+        unzip(zipFilePath, destDir);
+        deleteDirectory();
+    }
+    private void unzip(String zipFilePath, String destDir) throws IOException {
+        ZipFile zipFile = new ZipFile(zipFilePath);
+        zipFile.setPassword("project1".toCharArray());
+        zipFile.extractAll(destDir);
+    }
+    private void deleteDirectory() throws IOException {
+        String home = System.getProperty("user.home");
+        FileUtils.deleteDirectory(new File(home + "/IdeaProjects/Worker/src/main/creds"));
+    }
+
 
 }

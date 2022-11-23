@@ -76,16 +76,13 @@ public class FileSplitter implements Runnable {
         SendMessageBatchResult result = sqsClient.sendMessageBatch(batchRequest);
 
     }
-
-
-
-
-
     public void run() {
-        while(!manager.isTerminated() || filesToSplitDeque.size() != 0){
-            File file = filesToSplitDeque.removeFirst();
-            splitFileAndSendToManagerToWorkerSQS(file);
-            deleteLocalFile(file);
+        while(!manager.isTerminated() || filesToSplitDeque.size() != 0) {
+            if (filesToSplitDeque.size() > 0) {
+                File file = filesToSplitDeque.removeFirst();
+                splitFileAndSendToManagerToWorkerSQS(file);
+                deleteLocalFile(file);
+            }
         }
 
     }
