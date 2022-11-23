@@ -14,11 +14,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class workerMessagesHandler implements Runnable {
-    final private String workerToManagerSQS = "";
+    final private String workerToManagerSQS = "https://sqs.us-east-1.amazonaws.com/712064767285/processedDataSQS.fifo";
     final private AmazonSQS sqsClient;
 
     final private AmazonS3 s3Client;
-    final private String managerToLocalApplicationSQSURL = "";
+    final private String managerToLocalApplicationSQSURL = "https://sqs.us-east-1.amazonaws.com/712064767285/ManagerToLocalApplicationSQS.fifo";
     private ConcurrentHashMap<String,File> fileIDHashmap;
     private String uploadBucket;
     final private ManagerClass manager;
