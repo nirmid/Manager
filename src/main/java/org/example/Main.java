@@ -1,5 +1,8 @@
 package org.example;
 
+import org.eclipse.jgit.api.errors.GitAPIException;
+
+import java.io.IOException;
 import java.util.List;
 
 public class Main
@@ -15,7 +18,7 @@ public class Main
             threadList.remove(t);
         }
     }
-    public static void main( String[] args ) throws InterruptedException {
+    public static void main( String[] args ) throws InterruptedException, GitAPIException, IOException {
         ManagerClass manager = new ManagerClass();
         S3DownloaderAndWorkerInitiliazer s3DownloaderAndWorkerInitiliazer = new S3DownloaderAndWorkerInitiliazer(manager);
         FileSplitter fileSplitter = new FileSplitter(manager);

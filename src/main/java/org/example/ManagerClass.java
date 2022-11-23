@@ -35,13 +35,14 @@ public class ManagerClass {
 
     private boolean terminated = false;
     private ConcurrentHashMap<String,File> fileIDHashmap;
-    public ManagerClass(){
+    public ManagerClass() throws GitAPIException, IOException {
         sqsClient = AmazonSQSClientBuilder.defaultClient();
         s3Client = AmazonS3ClientBuilder.defaultClient();
         filesToSplitDeque = new LinkedBlockingDeque<>();
         fileIDHashmap = new ConcurrentHashMap<>();
         ec2Client = AmazonEC2ClientBuilder.defaultClient();
         threadList = new ArrayList<>();
+        setCredentials();
     }
 
     public String getWorkerAmiId() {
