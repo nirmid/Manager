@@ -79,7 +79,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
         int numOfWorkersToInit = Math.min(numOfWorkersAllowedToAdd,numOfWorkersNeededToAdd);
         if(numOfWorkersToInit > 0){
             RunInstancesRequest runRequest = new RunInstancesRequest()
-                    .withImageId("ami-02ec6a6ea88f4a9a7")
+                    .withImageId(manager.getWorkerAmiId())
                     .withInstanceType(InstanceType.T2Micro)
                     .withMaxCount(numOfWorkersToInit)
                     .withMinCount(numOfWorkersToInit)

@@ -23,6 +23,8 @@ public class ManagerClass {
     final private String uploadBucket = "amazon-first-project";
     final private int workerToThreadRatio = 5;
 
+    final private String workerAmiId = "ami-0f3a3cb1578b4894f";
+
 
     private List<Thread> threadList;
 
@@ -35,6 +37,10 @@ public class ManagerClass {
         fileIDHashmap = new ConcurrentHashMap<>();
         ec2Client = AmazonEC2ClientBuilder.defaultClient();
         threadList = new ArrayList<>();
+    }
+
+    public String getWorkerAmiId() {
+        return workerAmiId;
     }
 
     public AmazonEC2 getEc2Client() {
