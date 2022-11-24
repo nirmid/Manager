@@ -31,6 +31,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
             try {
                 List<Message> messages = getMessagesFromSQS();
                 downloadFromS3(messages);
+                System.out.println(messages.size() + "  Messages size");
                 for (Message message : messages) {
                     int numOfWorkersNeeded = Integer.parseInt(message.getMessageAttributes().get("workers").getStringValue());
                     initWorkers(numOfWorkersNeeded);
@@ -75,15 +76,23 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
         int numOfWorkersAllowedToAdd = maximumWorkers - currentWorkers;
         int numOfWorkersNeededToAdd = numOfWorkersToRun - currentWorkers;
         int numOfWorkersToInit = Math.min(numOfWorkersAllowedToAdd,numOfWorkersNeededToAdd);
+        System.out.println(numOfWorkersToInit);
         if(numOfWorkersToInit > 0){
+            Tag tag = new Tag("worker","worker");
+            List<Tag> tags = new ArrayList<>();
+            tags.add(tag);
+            List<TagSpecification> tagSpecificationsList = new ArrayList<>();
+            tagSpecificationsList.add(new TagSpecification().withTags(tags).withResourceType(ResourceType.Instance));
             RunInstancesRequest runRequest = new RunInstancesRequest()
                     .withImageId(manager.getWorkerAmiId())
                     .withInstanceType(InstanceType.T2Micro)
                     .withMaxCount(numOfWorkersToInit)
                     .withMinCount(numOfWorkersToInit)
+                    .withTagSpecifications(tagSpecificationsList)
                     .withUserData((Base64.getEncoder().encodeToString((getUserDataScript()).getBytes())))
                     .withMonitoring(true);
-            ec2Client.runInstances(runRequest);
+            RunInstancesResult result = ec2Client.runInstances(runRequest);
+            System.out.println(result.getReservation().getReservationId());
         }
         initWorkerMessagesHandlerThreads();
     }
@@ -139,20 +148,23 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
         while (!done) {
             List<Reservation> reserveList = response.getReservations();
             for (Reservation reservation : reserveList) {
-                for(Instance instance: reservation.getInstances()){
-                    currentWorkers++;
+                    for (Instance instance : reservation.getInstances()) {
+                        if ((instance.getState().getName().equals("Running") || instance.getState().getName().equals("Pending")) && instance.getTags().get(0).getKey().equals("worker")) {
+                            System.out.println(instance.getState().getName());
+                            currentWorkers++;
+                        }
+                    }
+                request.setNextToken(response.getNextToken());
+                if (response.getNextToken() == null) {
+                    done = true;
                 }
-            }
-            request.setNextToken(response.getNextToken());
-            if (response.getNextToken() == null){
-                done = true;
             }
         }
         return currentWorkers;
     }
     public void insertToFilesToSplitDeque(List<Message> messages){
         String home = System.getProperty("user.home");
-        BlockingDeque filesToSplit = manager.getFilesToSplitDeque();
+        BlockingDeque<File> filesToSplit = manager.getFilesToSplitDeque();
         for (Message message : messages) {
             String id = message.getMessageAttributes().get("id").getStringValue();
             File outputFile = new File (home + "/IdeaProjects/Manager/src/main/java/Output/" + id + ".txt");

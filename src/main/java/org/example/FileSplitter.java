@@ -30,6 +30,7 @@ public class FileSplitter implements Runnable {
             String next, line = br.readLine();
             boolean eof = false;
             while (line != null) {
+                System.out.println(line);
                 next = br.readLine();
                 if (next == null){
                     eof = true;
