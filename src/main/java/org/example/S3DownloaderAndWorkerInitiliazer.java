@@ -93,7 +93,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
         lines.add("#!/bin/bash");
         lines.add("rm Worker.jar");
         lines.add("echo Deleted Worker.jar");
-        lines.add("wget -O Worker.jar https://github.com/Asif857/Worker/blob/master/out/artifacts/Worker_jar/Worker.jar?raw=true");
+        lines.add("curl -L https://github.com/Asif857/Worker/blob/master/out/artifacts/Worker_jar/Worker.jar?raw=true -o Worker.jar");
         lines.add("echo Downloading Worker.jar");
         lines.add("zip -d Worker.jar 'META-INF/.SF' 'META-INF/.RSA' 'META-INF/*SF'");
         lines.add("echo Deleting Security Issues");
