@@ -63,11 +63,10 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
             }
             else {
                 String messageS3Path = message.getMessageAttributes().get("path").getStringValue();
-                String outputPath = "Output/" + messageS3Path;
-                String bucket = message.getMessageAttributes().get("bucket").getStringValue();
                 String id = message.getMessageAttributes().get("id").getStringValue();
+                String bucket = message.getMessageAttributes().get("bucket").getStringValue();
                 File outputFile = new File(home + "/IdeaProjects/Manager/src/main/java/Output/" + id + ".txt");
-                s3Client.getObject(new GetObjectRequest(bucket, outputPath), outputFile);
+                s3Client.getObject(new GetObjectRequest(bucket, messageS3Path), outputFile);
             }
         }
     }
