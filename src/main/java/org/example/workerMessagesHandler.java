@@ -54,6 +54,7 @@ public class workerMessagesHandler implements Runnable {
             String imageText = message.getMessageAttributes().get("message").getStringValue();
             boolean eof = Boolean.getBoolean(message.getMessageAttributes().get("eof").getStringValue());
             File file = fileIDHashmap.get(id);
+            System.out.println(file.getAbsoluteFile());
             writeToFile(file,imageUrl,imageText);
             if (eof){
                 finishedFiles.add(file);
@@ -67,7 +68,7 @@ public class workerMessagesHandler implements Runnable {
         BufferedWriter bw = null;
         PrintWriter pw = null;
         try {
-            fw = new FileWriter(file, true);
+            fw = new FileWriter(file.getAbsoluteFile(), true);
             bw = new BufferedWriter(fw);
             pw = new PrintWriter(bw);
             pw.println(imageUrl);

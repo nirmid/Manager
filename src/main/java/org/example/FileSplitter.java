@@ -35,7 +35,9 @@ public class FileSplitter implements Runnable {
                 if (next == null){
                     eof = true;
                 }
-                SendMessageBatchRequestEntry entry = createBatchRequestEntry(currFile.getName(),line, String.valueOf(batchEntriesList.size()),eof);
+                String id = currFile.getName().substring(0,currFile.getName().length()-4);
+                System.out.println(id);
+                SendMessageBatchRequestEntry entry = createBatchRequestEntry(id,line, String.valueOf(batchEntriesList.size()),eof);
                 batchEntriesList.add(entry);
                 if (batchEntriesList.size() == 10){
                     sendBatch(batchEntriesList);

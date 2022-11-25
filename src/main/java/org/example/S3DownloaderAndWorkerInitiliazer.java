@@ -11,6 +11,7 @@ import com.amazonaws.services.sqs.model.ReceiveMessageRequest;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class S3DownloaderAndWorkerInitiliazer implements Runnable{
     private AmazonSQS sqsClient;
@@ -31,6 +32,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
             try {
                 List<Message> messages = getMessagesFromSQS();
                 downloadFromS3(messages);
+                createOutputFiles(messages);
                 System.out.println(messages.size() + "  Messages size");
                 for (Message message : messages) {
                     int numOfWorkersNeeded = Integer.parseInt(message.getMessageAttributes().get("workers").getStringValue());
@@ -43,6 +45,27 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
             }
         }
     }
+
+    private void createOutputFiles(List<Message> messages) {
+        ConcurrentHashMap<String,File> fileIDHashmap = manager.getFileIDHashmap();
+        for(Message message : messages){
+            String id = message.getMessageAttributes().get("id").getStringValue();
+            try {
+                File outputFile = new File(id + ".txt");
+                if (outputFile.createNewFile()) {
+                    System.out.println("File created: " + outputFile.getName());
+                    fileIDHashmap.put(id,outputFile);
+                } else
+                    System.out.println("File already exists.");
+
+            }catch(Exception e){
+                System.out.println("An error occurred.");
+                e.printStackTrace();
+            }
+        }
+
+    }
+
     public List<Message> getMessagesFromSQS() throws InterruptedException {
         Message message = null;
         ReceiveMessageRequest request = new ReceiveMessageRequest()
