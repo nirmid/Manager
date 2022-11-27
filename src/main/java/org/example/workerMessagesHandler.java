@@ -156,6 +156,7 @@ public class workerMessagesHandler implements Runnable {
                 e.printStackTrace();
             }
         }
+        System.out.println("workerMessagesHandler Terminated");
         shutDownWorkers();
 
 

@@ -44,6 +44,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
                 throw new RuntimeException(e);
             }
         }
+        System.out.println("S3DownloaderAndWorkerInitiliazer Terminated");
     }
 
     private void createOutputFiles(List<Message> messages) {
@@ -84,6 +85,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
         for (Message message : messages){
             if (message.getMessageAttributes().get("TERMINATE") != null){
                 this.manager.setTerminated(true);
+                System.out.println("got terminate");
             }
             else {
                 String messageS3Path = message.getMessageAttributes().get("path").getStringValue();

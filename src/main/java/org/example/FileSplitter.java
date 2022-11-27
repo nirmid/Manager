@@ -87,6 +87,7 @@ public class FileSplitter implements Runnable {
                 deleteLocalFile(file);
             }
         }
+        System.out.println("FileSplitter Terminated");
 
     }
 
