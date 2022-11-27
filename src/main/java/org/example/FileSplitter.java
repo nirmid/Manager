@@ -68,7 +68,7 @@ public class FileSplitter implements Runnable {
         return new SendMessageBatchRequestEntry(entryId,imageUrl)
                 .withMessageAttributes(messageAttributes)
                 .withMessageGroupId(localAppId)
-                .withMessageDeduplicationId(imageUrl)
+                .withMessageDeduplicationId(imageUrl+localAppId)
                 .withMessageBody("musst");
     }
     private void sendBatch(List<SendMessageBatchRequestEntry> batchEntriesList){

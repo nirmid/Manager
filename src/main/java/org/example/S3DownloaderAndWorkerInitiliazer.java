@@ -172,7 +172,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
             List<Reservation> reserveList = response.getReservations();
             for (Reservation reservation : reserveList) {
                     for (Instance instance : reservation.getInstances()) {
-                        if ((instance.getState().getName().equals("Running") || instance.getState().getName().equals("Pending")) && instance.getTags().get(0).getKey().equals("worker")) {
+                        if ((instance.getState().getName().equals("pending") || instance.getState().getName().equals("running") || instance.getState().getName().equals("pending")) && instance.getTags().get(0).getKey().equals("worker")) {
                             currentWorkers++;
                         }
                     }

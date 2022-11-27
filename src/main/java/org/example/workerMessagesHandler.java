@@ -59,8 +59,6 @@ public class workerMessagesHandler implements Runnable {
             String imageUrl = message.getBody();
             String imageText = message.getMessageAttributes().get("message").getStringValue();
             boolean eof = message.getMessageAttributes().get("eof").getStringValue().equals("true");
-            System.out.println("eof string message value from worker: "+message.getMessageAttributes().get("eof").getStringValue());
-            System.out.println("eof boolean message value from worker: "+eof);
             File file = fileIDHashmap.get(id);
             writeToFile(file,imageUrl,imageText);
             if (eof){
@@ -129,11 +127,11 @@ public class workerMessagesHandler implements Runnable {
         while (!done) {
             List<Reservation> reserveList = response.getReservations();
             for (Reservation reservation : reserveList) {
-                if (!reservation.getRequesterId().equals("manager")) {
-                    for (Instance instance : reservation.getInstances()) {
+                for (Instance instance : reservation.getInstances()) {
+                    if(instance.getTags().get(0).getKey().equals("worker"))
                         terminateInstance(instance);
-                    }
                 }
+
             }
             request.setNextToken(response.getNextToken());
             if (response.getNextToken() == null) {
