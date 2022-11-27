@@ -32,14 +32,17 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
             try {
                 List<Message> messages = getMessagesFromSQS();
                 downloadFromS3(messages);
-                createOutputFiles(messages);
-                System.out.println(messages.size() + "  Messages size");
-                for (Message message : messages) {
-                    int numOfWorkersNeeded = Integer.parseInt(message.getMessageAttributes().get("workers").getStringValue());
-                    initWorkers(numOfWorkersNeeded);
+                if(!manager.isTerminated()) {
+                    createOutputFiles(messages);
+                /*
+                    for (Message message : messages) {
+                        int numOfWorkersNeeded = Integer.parseInt(message.getMessageAttributes().get("workers").getStringValue());
+                        initWorkers(numOfWorkersNeeded);
                 }
-                insertToFilesToSplitDeque(messages);
-                deleteMessagesFromToManagerSQS(messages);
+                 */
+                    insertToFilesToSplitDeque(messages);
+                    deleteMessagesFromToManagerSQS(messages);
+                }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -101,7 +104,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
         int numOfWorkersAllowedToAdd = maximumWorkers - currentWorkers;
         int numOfWorkersNeededToAdd = numOfWorkersToRun - currentWorkers;
         int numOfWorkersToInit = Math.min(numOfWorkersAllowedToAdd,numOfWorkersNeededToAdd);
-        System.out.println(numOfWorkersToInit);
+        System.out.println("Number of workers to init: "+numOfWorkersToInit);
         if(numOfWorkersToInit > 0){
             Tag tag = new Tag("worker","worker");
             List<Tag> tags = new ArrayList<>();
@@ -117,7 +120,6 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
                     .withUserData((Base64.getEncoder().encodeToString((getUserDataScript()).getBytes())))
                     .withMonitoring(true);
             RunInstancesResult result = ec2Client.runInstances(runRequest);
-            System.out.println(result.getReservation().getReservationId());
         }
         initWorkerMessagesHandlerThreads();
     }
@@ -132,10 +134,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
         lines.add("echo Deleting Security Issues");
         lines.add("java -jar Worker.jar");
         lines.add("echo Running Worker.jar");
-        String temp = (join(lines, "\n"));
-        System.out.println(temp);
         String str = Base64.getEncoder().encodeToString((join(lines, "\n").getBytes()));
-        System.out.println(str);
         return str;
     }
 
@@ -175,7 +174,6 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
             for (Reservation reservation : reserveList) {
                     for (Instance instance : reservation.getInstances()) {
                         if ((instance.getState().getName().equals("Running") || instance.getState().getName().equals("Pending")) && instance.getTags().get(0).getKey().equals("worker")) {
-                            System.out.println(instance.getState().getName());
                             currentWorkers++;
                         }
                     }
@@ -185,6 +183,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
                 }
             }
         }
+        System.out.println("Number of active workers: "+currentWorkers);
         return currentWorkers;
     }
     public void insertToFilesToSplitDeque(List<Message> messages){

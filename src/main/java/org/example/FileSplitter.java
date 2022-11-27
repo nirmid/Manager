@@ -30,13 +30,12 @@ public class FileSplitter implements Runnable {
             String next, line = br.readLine();
             boolean eof = false;
             while (line != null) {
-                System.out.println(line);
                 next = br.readLine();
                 if (next == null){
                     eof = true;
                 }
+                System.out.println("eof value sent to worker:"+ eof);
                 String id = currFile.getName().substring(0,currFile.getName().length()-4);
-                System.out.println(id);
                 SendMessageBatchRequestEntry entry = createBatchRequestEntry(id,line, String.valueOf(batchEntriesList.size()),eof);
                 batchEntriesList.add(entry);
                 if (batchEntriesList.size() == 10){

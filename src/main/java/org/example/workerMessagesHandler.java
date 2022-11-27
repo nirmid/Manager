@@ -34,7 +34,6 @@ public class workerMessagesHandler implements Runnable {
     }
 
     public List<Message> getMessagesFromWorkerSQS() throws InterruptedException {
-        Message message = null;
         ReceiveMessageRequest request = new ReceiveMessageRequest()
                 .withQueueUrl(workerToManagerSQS)
                 .withMaxNumberOfMessages(10)
@@ -46,18 +45,27 @@ public class workerMessagesHandler implements Runnable {
         }
         return messages;
     }
+
+    public void deleteMessagesWorkerToManagerSQS(List<Message> messages) {
+        for (Message message : messages) {
+            sqsClient.deleteMessage(workerToManagerSQS, message.getReceiptHandle());
+        }
+    }
+
     public List<File> updateFiles(List<Message> messages) throws IOException {
         List<File> finishedFiles = new ArrayList<>();
         for (Message message: messages){
             String id = message.getMessageAttributes().get("id").getStringValue();
             String imageUrl = message.getBody();
             String imageText = message.getMessageAttributes().get("message").getStringValue();
-            boolean eof = Boolean.getBoolean(message.getMessageAttributes().get("eof").getStringValue());
+            boolean eof = message.getMessageAttributes().get("eof").getStringValue().equals("true");
+            System.out.println("eof string message value from worker: "+message.getMessageAttributes().get("eof").getStringValue());
+            System.out.println("eof boolean message value from worker: "+eof);
             File file = fileIDHashmap.get(id);
-            System.out.println(file.getAbsoluteFile());
             writeToFile(file,imageUrl,imageText);
             if (eof){
                 finishedFiles.add(file);
+                System.out.println("File added to be sent");
             }
         }
         return finishedFiles;
@@ -86,16 +94,17 @@ public class workerMessagesHandler implements Runnable {
     }
     public void uploadToS3(List<File> files){
         for (File file : files){
+            System.out.println("uploading finished file to s3");
             String s3OutputPath = "Output/" + file.getName();
             s3Client.putObject(uploadBucket,s3OutputPath,file);
-            fileIDHashmap.remove(file.getName());
+            fileIDHashmap.remove(file.getName().substring(0,file.getName().length()-4));
         }
 
     }
 
     public void sendOutputURLToLocalApplication(List<File> files){
         for (File file:files){
-            String id = file.getName();
+            String id = file.getName().substring(0,file.getName().length()-4);
             Map<String, MessageAttributeValue> messageAttributes = new HashMap<>();
             messageAttributes.put(id, new MessageAttributeValue()
                     .withStringValue("Output/" + file.getName())
@@ -108,10 +117,12 @@ public class workerMessagesHandler implements Runnable {
                     .withMessageGroupId(id);
             SendMessageResult result = sqsClient.sendMessage(requestMessageSend);
             System.out.println(result.getMessageId());
+            System.out.println("sent files to Local");
         }
     }
 
     public void shutDownWorkers(){
+        System.out.println("shutting down workers");
         DescribeInstancesRequest request = new DescribeInstancesRequest();
         DescribeInstancesResult response = ec2Client.describeInstances(request);
         boolean done = false;
@@ -152,6 +163,7 @@ public class workerMessagesHandler implements Runnable {
                 List<File> filesToUpload = updateFiles(messages);
                 uploadToS3(filesToUpload);
                 sendOutputURLToLocalApplication(filesToUpload);
+                deleteMessagesWorkerToManagerSQS(messages);
             }catch(Exception e){
                 e.printStackTrace();
             }

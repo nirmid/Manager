@@ -8,14 +8,13 @@ import java.util.List;
 public class Main
 {
     public static void startThreads(List<Thread> threadList){
-        for (Thread t : threadList){
-            t.start();
-        }
+        for(int i=0; i<threadList.size(); i=i+1)
+            threadList.get(i).start();
     }
     public static void stopThreads(List<Thread> threadList) throws InterruptedException {
-        for (Thread t : threadList) {
-            t.join();
-            threadList.remove(t);
+        for(int i=0; i<threadList.size(); i=i+1){
+            threadList.get(i).join();
+            threadList.remove(i);
         }
     }
     public static void main( String[] args ) throws InterruptedException, GitAPIException, IOException {
