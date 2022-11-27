@@ -34,12 +34,11 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
                 downloadFromS3(messages);
                 if(!manager.isTerminated()) {
                     createOutputFiles(messages);
-                /*
                     for (Message message : messages) {
                         int numOfWorkersNeeded = Integer.parseInt(message.getMessageAttributes().get("workers").getStringValue());
                         initWorkers(numOfWorkersNeeded);
                 }
-                 */
+
                     insertToFilesToSplitDeque(messages);
                     deleteMessagesFromToManagerSQS(messages);
                 }
