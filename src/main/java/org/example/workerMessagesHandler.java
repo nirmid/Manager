@@ -123,6 +123,7 @@ public class workerMessagesHandler implements Runnable {
         System.out.println("shutting down workers");
         DescribeInstancesRequest request = new DescribeInstancesRequest();
         DescribeInstancesResult response = ec2Client.describeInstances(request);
+        Instance manager= null ;
         boolean done = false;
         while (!done) {
             List<Reservation> reserveList = response.getReservations();
@@ -130,6 +131,8 @@ public class workerMessagesHandler implements Runnable {
                 for (Instance instance : reservation.getInstances()) {
                     if(instance.getTags().get(0).getKey().equals("worker"))
                         terminateInstance(instance);
+                    else
+                        manager = instance;
                 }
 
             }
@@ -138,6 +141,7 @@ public class workerMessagesHandler implements Runnable {
                 done = true;
             }
         }
+        terminateInstance(manager);
     }
 
     private void terminateInstance(Instance instance) {
