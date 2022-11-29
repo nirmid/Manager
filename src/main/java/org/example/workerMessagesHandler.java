@@ -141,6 +141,7 @@ public class workerMessagesHandler implements Runnable {
                 done = true;
             }
         }
+        System.out.println("terminating manager");
         terminateInstance(manager);
     }
 
