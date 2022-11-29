@@ -66,6 +66,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
                 e.printStackTrace();
             }
         }
+        System.out.println("S3D&WI: "+fileIDHashmap.toString());
 
     }
 

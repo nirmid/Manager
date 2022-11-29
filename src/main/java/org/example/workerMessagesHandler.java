@@ -54,6 +54,7 @@ public class workerMessagesHandler implements Runnable {
 
     public List<File> updateFiles(List<Message> messages) throws IOException {
         List<File> finishedFiles = new ArrayList<>();
+        System.out.println("WMH: "+fileIDHashmap.toString());
         for (Message message: messages){
             String id = message.getMessageAttributes().get("id").getStringValue();
             String imageUrl = message.getBody();
@@ -114,7 +115,6 @@ public class workerMessagesHandler implements Runnable {
                     .withMessageDeduplicationId(id)
                     .withMessageGroupId(id);
             SendMessageResult result = sqsClient.sendMessage(requestMessageSend);
-            System.out.println(result.getMessageId());
             System.out.println("sent files to Local");
         }
     }
@@ -149,7 +149,6 @@ public class workerMessagesHandler implements Runnable {
                 .get(0)
                 .getPreviousState()
                 .getName();
-        System.out.println("The Instance is terminated with id: " + instanceId);
     }
 
 
