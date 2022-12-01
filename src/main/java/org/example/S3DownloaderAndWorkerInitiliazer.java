@@ -134,6 +134,8 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
         lines.add("echo Deleting Security Issues");
         lines.add("java -jar Worker.jar");
         lines.add("echo Running Worker.jar");
+        lines.add("export LD_LIBRARY_PATH=/usr/local/lib");
+        lines.add("sudo ldconfig");
         String str = Base64.getEncoder().encodeToString((join(lines, "\n").getBytes()));
         return str;
     }
