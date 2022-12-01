@@ -28,7 +28,7 @@ public class ManagerClass {
     final private String uploadBucket = "amazon-first-project";
     final private int workerToThreadRatio = 5;
 
-    final private String workerAmiId = "ami-071d02d4283d65a30";
+    final private String workerAmiId = "ami-06a5912e3695006d8";
 
 
     private List<Thread> threadList;
