@@ -139,6 +139,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
         lines.add("sudo -i");
         lines.add("echo Adding root privileges");
         lines.add("java -jar Worker.jar");
+        lines.add("su ec2-user -c 'java -jar Worker.jar'");
        // lines.add("export LD_LIBRARY_PATH=/usr/local/lib");
         //export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:usr/local/lib
         // lines.add("sudo ldconfig");
