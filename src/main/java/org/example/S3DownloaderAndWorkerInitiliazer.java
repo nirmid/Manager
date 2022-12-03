@@ -135,6 +135,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
         lines.add("zip -d Worker.jar 'META-INF/.SF' 'META-INF/.RSA' 'META-INF/*SF'");
         lines.add("echo Deleting Security Issues");
         lines.add("export LD_LIBRARY_PATH=/usr/local/lib");
+        lines.add("export LD_LIBRARY_PATH=/usr/local/lib");
         lines.add("sudo ldconfig");
         lines.add("echo Setting Libraries");
         lines.add("java -jar Worker.jar");
