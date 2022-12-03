@@ -124,7 +124,8 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
                     .withMinCount(numOfWorkersToInit)
                     .withTagSpecifications(tagSpecificationsList)
                     .withUserData((Base64.getEncoder().encodeToString((getUserDataScript()).getBytes())))
-                    .withMonitoring(true);
+                    .withMonitoring(true)
+                    .withInstanceInitiatedShutdownBehavior(ShutdownBehavior.Terminate);
             RunInstancesResult result = ec2Client.runInstances(runRequest);
         }
         initWorkerMessagesHandlerThreads();
