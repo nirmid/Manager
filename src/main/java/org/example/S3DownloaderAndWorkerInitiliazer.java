@@ -13,6 +13,8 @@ import java.util.*;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static java.lang.Math.max;
+
 public class S3DownloaderAndWorkerInitiliazer implements Runnable{
     private AmazonSQS sqsClient;
     final private int maximumWorkers = 18;
@@ -20,8 +22,10 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
     private ManagerClass manager;
     private String sqsToManagerUrl;
     private AmazonEC2 ec2Client;
+    private int workersNeededInGeneral;
     public S3DownloaderAndWorkerInitiliazer(ManagerClass manager){
         this.manager = manager;
+        this.workersNeededInGeneral = 0;
         this.sqsClient = manager.getSqsClient();
         this.sqsToManagerUrl = manager.getSqsFromLocalApplicationURL();
         this.s3Client = manager.getS3Client();
@@ -36,11 +40,15 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
                     createOutputFiles(messages);
                     for (Message message : messages) {
                         int numOfWorkersNeeded = Integer.parseInt(message.getMessageAttributes().get("workers").getStringValue());
+                        workersNeededInGeneral = max(numOfWorkersNeeded,workersNeededInGeneral);
                         initWorkers(numOfWorkersNeeded);
                 }
-
                     insertToFilesToSplitDeque(messages);
                     deleteMessagesFromToManagerSQS(messages);
+                    int workersNeeded = workersNeededInGeneral - countWorkers();
+                    if (workersNeeded > 0){
+                        initWorkers(workersNeeded);
+                    }
                 }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -139,6 +147,7 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
        // lines.add("echo Setting Libraries");
       //  lines.add("java -jar Worker.jar");
         lines.add("echo Running Worker.jar");
+        lines.add("shutdown now");
         String str = Base64.getEncoder().encodeToString((join(lines, "\n").getBytes()));
         return str;
     }
