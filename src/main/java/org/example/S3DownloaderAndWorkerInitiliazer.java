@@ -42,9 +42,11 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
                     insertToFilesToSplitDeque(messages);
                     deleteMessagesFromToManagerSQS(messages);
                 }
+                /*
                 else{
                     deleteMessagesFromToManagerSQS(messages);
                 }
+                */
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -73,7 +75,6 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
     }
 
     public List<Message> getMessagesFromSQS() throws InterruptedException {
-        Message message = null;
         ReceiveMessageRequest request = new ReceiveMessageRequest()
                 .withQueueUrl(sqsToManagerUrl)
                 .withMaxNumberOfMessages(10)
@@ -90,7 +91,10 @@ public class S3DownloaderAndWorkerInitiliazer implements Runnable{
         for (Message message : messages){
             if (message.getMessageAttributes().get("TERMINATE") != null){
                 this.manager.setTerminated(true);
-                System.out.println("got terminate");
+                List<Message> terminate = new ArrayList<>();
+                terminate.add(message);
+                deleteMessagesFromToManagerSQS(terminate);
+                System.out.println("got & deleted terminate");
             }
             else {
                 String messageS3Path = message.getMessageAttributes().get("path").getStringValue();
