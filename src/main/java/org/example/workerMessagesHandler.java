@@ -167,7 +167,7 @@ public class workerMessagesHandler implements Runnable {
                 List<File> filesToUpload = updateFiles(messages);
                 uploadToS3(filesToUpload);
                 sendOutputURLToLocalApplication(filesToUpload);
-                deleteMessagesWorkerToManagerSQS(messages,managerToLocalApplicationSQSURL);
+                deleteMessagesWorkerToManagerSQS(messages,workerToManagerSQS);
             }catch(Exception e){
                 e.printStackTrace();
             }
