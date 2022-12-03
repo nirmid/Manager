@@ -48,9 +48,9 @@ public class workerMessagesHandler implements Runnable {
         return messages;
     }
 
-    public void deleteMessagesWorkerToManagerSQS(List<Message> messages,String sqs) {
+    public void deleteMessagesWorkerToManagerSQS(List<Message> messages) {
         for (Message message : messages) {
-            sqsClient.deleteMessage(sqs, message.getReceiptHandle());
+            sqsClient.deleteMessage(workerToManagerSQS, message.getReceiptHandle());
         }
     }
 
@@ -167,7 +167,7 @@ public class workerMessagesHandler implements Runnable {
                 List<File> filesToUpload = updateFiles(messages);
                 uploadToS3(filesToUpload);
                 sendOutputURLToLocalApplication(filesToUpload);
-                deleteMessagesWorkerToManagerSQS(messages,workerToManagerSQS);
+                deleteMessagesWorkerToManagerSQS(messages);
             }catch(Exception e){
                 e.printStackTrace();
             }
