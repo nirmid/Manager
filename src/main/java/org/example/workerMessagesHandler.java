@@ -23,6 +23,7 @@ public class workerMessagesHandler implements Runnable {
     private String uploadBucket;
     final private ManagerClass manager;
     final private AmazonEC2 ec2Client;
+    private String sqsToManagerUrl;
 
     public workerMessagesHandler(ManagerClass manager) {
         this.ec2Client = manager.getEc2Client();
@@ -31,6 +32,7 @@ public class workerMessagesHandler implements Runnable {
         this.s3Client = manager.getS3Client();
         this.sqsClient = manager.getSqsClient();
         this.fileIDHashmap = manager.getFileIDHashmap();
+        this.sqsToManagerUrl = manager.getSqsFromLocalApplicationURL();
     }
 
     public List<Message> getMessagesFromWorkerSQS() throws InterruptedException {
@@ -46,9 +48,9 @@ public class workerMessagesHandler implements Runnable {
         return messages;
     }
 
-    public void deleteMessagesWorkerToManagerSQS(List<Message> messages) {
+    public void deleteMessagesWorkerToManagerSQS(List<Message> messages,String sqs) {
         for (Message message : messages) {
-            sqsClient.deleteMessage(workerToManagerSQS, message.getReceiptHandle());
+            sqsClient.deleteMessage(sqs, message.getReceiptHandle());
         }
     }
 
@@ -165,12 +167,14 @@ public class workerMessagesHandler implements Runnable {
                 List<File> filesToUpload = updateFiles(messages);
                 uploadToS3(filesToUpload);
                 sendOutputURLToLocalApplication(filesToUpload);
-                deleteMessagesWorkerToManagerSQS(messages);
+                deleteMessagesWorkerToManagerSQS(messages,managerToLocalApplicationSQSURL);
             }catch(Exception e){
                 e.printStackTrace();
             }
         }
-        System.out.println("workerMessagesHandler Terminated");
+        PurgeQueueRequest request = new PurgeQueueRequest().withQueueUrl(sqsToManagerUrl);
+        sqsClient.purgeQueue(request);
+        System.out.println("workerMessagesHandler Terminated and purged SQS");
         shutDownWorkers();
 
 
